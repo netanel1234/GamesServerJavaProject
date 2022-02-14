@@ -4,67 +4,40 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import com.hit.gameAlgo.IGameAlgo.GameState;
-
+/**
+ * This class represents an TicTacTow game where the computer performs a move at random
+ */
 public class TicTacTowRandom extends TicTacTow {
 
-	public TicTacTowRandom(int r, int c) 
+	public TicTacTowRandom(int rowLength, int colLength) 
 	{
-		super(r, c);
+		super(rowLength, colLength);
 	}
 
+	/**
+	 * calcComputerMove Calculates the copmuter's move and updates the game board
+	 */
 	@Override
 	public void calcComputerMove() 
 	{
-		List<Integer> list=new ArrayList<>();
-		int place=0;
-		int newPlace;
-		for(int i=0;i<3;i++)
-		{
-			for(int j=0;j<3;j++)
-			{
-				if(board[i][j]=='b')
-					list.add(place);
-				place++;
-			}
-		}
-		place=0;
-		newPlace=getRandomElement(list);
-		for(int i=0;i<3;i++)
-		{
-			for(int j=0;j<3;j++)
-			{
-				if(place==newPlace)
-					board[i][j]='c';
-				place++;
-			}
-		}
-
-		if(checkPlayerLost())
+		List<GameMove> emptyCells=new ArrayList<GameMove>();
+		for(int i=0;i<this.rowLength;i++)
+			for(int j=0;j<this.colLength;j++)
+				if(this.board[i][j]=='b')
+					emptyCells.add(new GameMove(i,j));
+		Random cellGenerator=new Random();
+		GameMove computerMove=emptyCells.get(cellGenerator.nextInt(emptyCells.size()));
+		this.board[computerMove.getCol()][computerMove.getRow()]='c';
+		if(this.checkPlayerLost())
 			gameState=GameState.PLAYER_LOST;
 	}
 	
-	public boolean checkPlayerLost()
-	{
-		if(		board[0][0]=='c' && board[0][1]=='c' && board[0][2]=='c' || 
-				board[1][0]=='c' && board[1][1]=='c' && board[1][2]=='c' ||
-				board[2][0]=='c' && board[2][1]=='c' && board[2][2]=='c' ||
-				board[0][0]=='c' && board[1][0]=='c' && board[2][0]=='c' ||
-				board[0][1]=='c' && board[1][1]=='c' && board[2][1]=='c' ||
-				board[0][2]=='c' && board[1][2]=='c' && board[2][2]=='c' ||
-				board[0][0]=='c' && board[1][1]=='c' && board[2][2]=='c' ||
-				board[0][2]=='c' && board[1][1]=='c' && board[2][0]=='c'     )
-			return true;
-		
-		return false;
-	}
-	
-	public int getRandomElement(List<Integer> list)
-	{
-		Random rand=new Random();
-		return list.get(rand.nextInt(list.size()));
-	}
-	
+	/**
+	 * updatePlayerMove Updates the player's move on the board 
+	 * in case the move is not legal - nothing is done
+	 * @param move - the player's move
+	 * @return true if the move is legal and false otherwise
+	 */
 	public boolean updatePlayerMove(GameMove move)
 	{
 		return super.updatePlayerMove(move);
