@@ -1,35 +1,18 @@
-/*
- * NOTE: The method getGameState does not return the state PLAYER_LOST. 
- * Therefore, we may need to check the game state (by gameState) after every
- * operation of the method calcComputerMove.
- */
-
 package com.hit.games;
 
 import com.hit.gameAlgo.GameBoard;
-import com.hit.gameAlgo.IGameAlgo;
 
+/**
+ * This abstract class implements the game
+ */
 public abstract class TicTacTow extends GameBoard {
 	
-	public GameState gameState;
-
-	public TicTacTow(int r, int c) 
-	{
-		super(r, c);
-		for(int i=0;i<r;i++)
-		{
-			for(int j=0;j<c;j++) 
-			{
-				board[i][j]='b';
-			}
-		}
-		
-		gameState=GameState.IN_PROGRESS;
-	}
-	
+	/**
+	 * Representation of all possible cell states on the board
+	 */
 	public static enum BoardSigns
 	{
-		BLANK('b'),COMPUTER('c'),PLAYER('p');
+		BLANK('b'), COMPUTER('c'), PLAYER('p');
 		
 		private char c;
 		
@@ -44,19 +27,32 @@ public abstract class TicTacTow extends GameBoard {
 		}
 	}
 	
+	public TicTacTow(int rowLength, int colLength) 
+	{
+		super(rowLength, colLength);
+	}
+	
+	/**
+	 * @param move - the last move made
+	 * @return the game state: PLAYER_WON \ PLAYER_LOST \ TIE \ IN PROGRESS
+	 */
 	public GameState getGameState(GameMove move)
 	{
-		gameState=GameState.IN_PROGRESS;
+		this.gameState=GameState.IN_PROGRESS;
 		if(updatePlayerMove(move))
 		{
 			if(checkPlayerWin())
-				gameState=GameState.PLAYER_WON;
+				this.gameState=GameState.PLAYER_WON;
 			else if(checkTie())
-				gameState=GameState.TIE;
+				this.gameState=GameState.TIE;
 		}
-		return gameState;
+		return this.gameState;
 	}
 	
+	/**
+	 * Check if the player won in the last step
+	 * @return - true if the player won, false otherwise
+	 */
 	public boolean checkPlayerWin()
 	{
 		if(		board[0][0]=='p' && board[0][1]=='p' && board[0][2]=='p' || 
@@ -68,53 +64,80 @@ public abstract class TicTacTow extends GameBoard {
 				board[0][0]=='p' && board[1][1]=='p' && board[2][2]=='p' ||
 				board[0][2]=='p' && board[1][1]=='p' && board[2][0]=='p'     )
 			return true;
-		
 		return false;
 	}
-	
+
+	/**
+	 * Check if the game ends in a draw. 
+	 * This happens when all the cells are full and they are not signs as 'b' (BLANK)
+	 * @return - true if the the game ends in a draw, false otherwise.
+	 */
 	public boolean checkTie()
 	{
-		if(board[0][0]!='b' && board[0][1]!='b' && board[0][2]!='b' && board[1][0]!='b' && board[1][1]!='b' && board[1][2]!='b' && board[2][0]!='b' && board[2][1]!='b' && board[2][2]!='b')
-		{
+		if(board[0][0]!='b' && 
+			board[0][1]!='b' && 
+			board[0][2]!='b' && 
+			board[1][0]!='b' && 
+			board[1][1]!='b' && 
+			board[1][2]!='b' && 
+			board[2][0]!='b' && 
+			board[2][1]!='b' && 
+		    board[2][2]!='b')
 			return true;
-		}
 		return false;
 	}
 	
+	/**
+	 * updatePlayerMove Updates the player's move on the board 
+	 * in case the move is not legal - nothing is done.
+	 * @param - move - the player's move
+	 * @return true if the move is legal and false otherwise
+	 */
 	public boolean updatePlayerMove(GameMove move)
 	{
-		if(board[move.getRow()][move.getCol()]!='b')
+		if(this.board[move.getRow()][move.getCol()]!='b')
 		{
-			gameState=GameState.ILLEGAL_PLAYER_MOVE;
+			this.gameState=GameState.ILLEGAL_PLAYER_MOVE;
 			return false;
 		}
 		else
 		{
-			board[move.getRow()][move.getCol()]='p';
+			this.board[move.getRow()][move.getCol()]='p';
 			return true;
 		}
 	}
-	
+
+	/**
+	 * @return the game board state (each cell's content)
+	 */
 	public char[][] getBoardState()
 	{
 		return board;
 	}
 	
+	/**
+	 * get game state
+	 */
 	public GameState getMemberGameState() 
 	{
-		return gameState;
+		return this.gameState;
 	}
 	
-	public void printBoard()
+	/**
+	 * Check if the player lost
+	 * @return true if the player lost, false otherwise
+	 */
+	public boolean checkPlayerLost()
 	{
-		for(int i=0;i<row;i++)
-		{
-			for(int j=0;j<col;j++)
-			{
-				System.out.print(board[i][j]+" ");
-			}
-			System.out.println();
-		}
-		System.out.println();
+		if(		board[0][0]=='c' && board[0][1]=='c' && board[0][2]=='c' || 
+				board[1][0]=='c' && board[1][1]=='c' && board[1][2]=='c' ||
+				board[2][0]=='c' && board[2][1]=='c' && board[2][2]=='c' ||
+				board[0][0]=='c' && board[1][0]=='c' && board[2][0]=='c' ||
+				board[0][1]=='c' && board[1][1]=='c' && board[2][1]=='c' ||
+				board[0][2]=='c' && board[1][2]=='c' && board[2][2]=='c' ||
+				board[0][0]=='c' && board[1][1]=='c' && board[2][2]=='c' ||
+				board[0][2]=='c' && board[1][1]=='c' && board[2][0]=='c'     )
+			return true;
+		return false;
 	}
 }
