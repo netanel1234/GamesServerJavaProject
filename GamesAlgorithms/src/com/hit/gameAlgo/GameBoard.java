@@ -1,39 +1,39 @@
 package com.hit.gameAlgo;
 
-
-/*
- * This is an abstract class that implements the interface IGameAlgo.
+/**
+ * This abstract class implements the IGameAlgo interface.
+ * Its role is to serve as a common denominator among all existing games in the software.
  */
 public abstract class GameBoard implements IGameAlgo {
 	
-	public int row;
-	public int col;
-	public char[][] board;
+	protected int rowLength;
+	protected int colLength;
+	protected char[][] board;
+	protected GameState gameState;
 	
-	public GameBoard(int r,int c)
+	public GameBoard(int rowLength,int colLength)
 	{
-		row=r;
-		col=c;
-		board=new char[r][c];
+		this.rowLength=rowLength;
+		this.colLength=colLength;
+		this.board=new char[rowLength][colLength];
+		for(int i=0;i<rowLength;i++)
+			for(int j=0;j<colLength;j++) 
+				board[i][j]='b';
+		this.gameState=GameState.IN_PROGRESS;
 	}
 	
-	public abstract IGameAlgo.GameState getGameState(GameBoard.GameMove move);
-	
-	public abstract boolean updatePlayerMove(GameBoard.GameMove move);
-	
-	public abstract void calcComputerMove();
-	
-	public abstract char[][] getBoardState();
-	
+	/**
+	 * This inner class represents a possible move
+	 */
 	public static class GameMove
 	{
 		private int row;
 		private int col;
 		
-		public GameMove(int r,int c)
+		public GameMove(int row,int col)
 		{
-			row=r;
-			col=c;
+			this.row=row;
+			this.col=col;
 		}
 		
 		public int getRow()
@@ -46,6 +46,4 @@ public abstract class GameBoard implements IGameAlgo {
 			return col;
 		}
 	}
-	
-	public abstract GameState getMemberGameState();
 }
