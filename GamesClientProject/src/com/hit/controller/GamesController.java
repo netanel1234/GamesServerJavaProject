@@ -5,62 +5,46 @@ import java.beans.PropertyChangeEvent;
 import com.hit.model.Model;
 import com.hit.view.View;
 
+/**
+ * GamesController gets the Model and the View and connect between them
+ */
 public class GamesController implements Controller {
 	
-	Model model;
-	View view;
+	private Model model;
+	private View view;
+	
 	
 	public GamesController(Model model,View view)
 	{
-		System.out.println("constractor of GamesController");
 		this.model=model;
 		this.view=view;
 	}
 	
+	/**
+	 * propertyChange in interface java.beans.PropertyChangeListener
+	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent event) 
 	{
-		System.out.println("propertyChange in GamesController");
 		if(event.getPropertyName().equals("newGameModel"))
-		{
-			System.out.println("int propertyChange event newGameModel");
 			this.view.updateViewNewGame((Character[])event.getNewValue());
-		}
 		else if(event.getPropertyName().equals("updatePlayerMoveModel"))
-		{
 			this.view.updateViewGameMove((Integer)event.getOldValue(),(Character[])event.getNewValue());
-		}
 		else if(event.getPropertyName().equals("newGameView"))
 		{
-			System.out.println("in propertyChange the newGameView selected");
-			String gameType=null;
-			String opponentType=null;
 			if((int)event.getNewValue()==1)
-			{
-				gameType="Tic Tac Tow";
-				opponentType="Smart";
-			}
+				this.model.newGame("Tic Tac Tow","Smart");
 			else if((int)event.getNewValue()==2)
-			{
-				gameType="Tic Tac Tow";
-				opponentType="Random";
-			}
+				this.model.newGame("Tic Tac Tow","Random");
 			else if((int)event.getNewValue()==3)
-			{
-				gameType="Catch The Bunny";
-				opponentType="Smart";
-			}
+				this.model.newGame("Catch The Bunny","Smart");			
 			else if((int)event.getNewValue()==4)
-			{
-				gameType="Catch The Bunny";
-				opponentType="Random";
-			}
-			this.model.newGame(gameType,opponentType);
+				this.model.newGame("Catch The Bunny","Random");
 		}
 		else if(event.getPropertyName().equals("updatePlayerMoveView"))
-		{
-			
-		}
+			this.model.updatePlayerMove((int)event.getOldValue(),(int)event.getNewValue());
+		else if(event.getPropertyName().equals("updatePlayerMoveModel"))
+			this.view.updateViewGameMove((Integer)event.getOldValue(),(Character[])event.getNewValue());
 	}
 
 }
