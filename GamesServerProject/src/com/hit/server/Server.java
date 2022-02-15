@@ -12,18 +12,30 @@ import java.util.concurrent.TimeUnit;
 
 import com.hit.services.GameServerController;
 
-public class Server implements PropertyChangeListener,Runnable{
+/**
+ * Server has an object of type - ServerSocket , that listens in port received in the constructor
+ * and it manages communication with the clients. Each request is handled in a separate thread. 
+ * 
+ * implements:
+ * PropertyChangeListener - to get relevant commands from CLI
+ * Runnable - to run in a separate thread
+ */
+public class Server implements PropertyChangeListener, Runnable {
 	
-	int capacity;
-	ServerSocket servreSocket;	
-	Executor executor;
-	boolean flag;
-
+	private int capacity;
+	private ServerSocket servreSocket;	
+	private Executor executor;
+	private boolean flag;
+	
+	/**
+	 * Constructor 
+	 * @param port - the port number that the server listens
+	 */
 	public Server(int port)
 	{
 		super();
-		System.out.println("constractor of server()");
 		this.capacity=2;
+		this.flag=true;
 		try 
 		{
 			this.servreSocket = new ServerSocket(port);
@@ -31,14 +43,15 @@ public class Server implements PropertyChangeListener,Runnable{
 		catch (IOException e) 
 		{
 			e.printStackTrace();
-			System.out.println("problem with the ServerSocket... in the constractor of class Server...");
 		}
 	}
 	
+	/**
+	 * run in interface java.lang.Runnable
+	 */
 	@Override
 	public void run() 
 	{
-		System.out.println("run() of server");
 		Socket client=null;
 		HandleRequest handleRequest=null;
 		executor=Executors.newFixedThreadPool(this.capacity);
@@ -47,10 +60,8 @@ public class Server implements PropertyChangeListener,Runnable{
 		{
 			try
 			{
-				System.out.println("in method run() of server class the server is waiting for client to connect");
 				client=servreSocket.accept();
-				System.out.println("client acccepted->"+client);
-				handleRequest=new HandleRequest(client,new GameServerController(this.capacity));
+				handleRequest=new HandleRequest(client, new GameServerController(this.capacity));
 				executor.execute(handleRequest);
 			}
 			catch (Exception e) 
@@ -70,17 +81,18 @@ public class Server implements PropertyChangeListener,Runnable{
 		}
 	}
 	
+	/**
+	 * propertyChange in interface java.beans.PropertyChangeListener
+	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent event) 
 	{		
-		System.out.println("propertyChange() in server");
 		if(event.getPropertyName().equals("GAME_SERVER_CONFIG"))
 		{
 			this.capacity=(int)event.getNewValue();
 		}
 		else if(event.getPropertyName().equals("START"))
 		{
-			System.out.println("event START in propertyChange");
 			this.flag=true;
 			new Thread(this).start();
 		}
