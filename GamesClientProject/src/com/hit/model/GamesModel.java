@@ -72,7 +72,7 @@ public class GamesModel implements Model {
 	{		
 		if(row==-1)
 			row=col;
-		
+		w
 		try 
 		{
 			this.messageToTheServerAsString="Update-Move"+":"+id+":"+row+":"+col;
