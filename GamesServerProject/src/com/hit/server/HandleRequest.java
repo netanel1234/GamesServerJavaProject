@@ -12,52 +12,56 @@ import com.hit.gameAlgo.GameBoard.GameMove;
 import com.hit.gameAlgo.IGameAlgo.GameState;
 import com.hit.services.GameServerController;
 
+/**
+ * The role of HandleRequest is to receive requests from a particular customer, for a game from start to finish.
+ * Requests are accepted from Server - from the relevant client socket.
+ */
 public class HandleRequest implements Runnable{
 	
-	Socket client;
-	GameServerController gameServerController;
-	ObjectInputStream input;
-	ObjectOutputStream output;
-	JSONObject jsonObject;
-	JSONObject jsonRequst;
-	JSONArray jsonBoard;
-	String messageFromTheClient;
-	String[] arr;//Strings array to split and turn it to JSONObject.
+	private Socket client;
+	private GameServerController gameServerController;
+	private ObjectInputStream input;
+	private ObjectOutputStream output;
+	private JSONObject jsonObject;
+	private JSONObject jsonRequst;
+	private JSONArray jsonBoard;
+	private String messageFromTheClient;
+	private String[] messageAsArray;
 
-	public HandleRequest(Socket s,GameServerController controller) throws IOException
+	public HandleRequest(Socket clientSocket, GameServerController controller) throws IOException
 	{
 		super();
-		System.out.println("the constractor of HandleRequest");
-		this.client=s;
+		this.client=clientSocket;
 		this.gameServerController=controller;
 		this.input=new ObjectInputStream(client.getInputStream());
 		this.output=new ObjectOutputStream(client.getOutputStream());
-		arr=new String[3];
+		messageAsArray=new String[3];
 	}
 
+	/**
+	 * get the message from the client as JSON file, parse it, 
+	 * calls the right method to execute the client's request in GameServerController.
+	 */
 	@Override
 	public void run() 
 	{
-		System.out.println("the method run() of HandleRequest");
-		while(true)
+		String type=null;
+		while(!type.equals("Stop-Game"))
 		{
 			this.jsonRequst=new JSONObject();
 			this.jsonBoard=new JSONArray();
 			try 
 			{
-				System.out.println("HandleRequest is waiting for string message to accept from the client side");
 				messageFromTheClient=(String)input.readObject();
-				arr=messageFromTheClient.split(":");
+				messageAsArray=messageFromTheClient.split(":");
 				
-				String type=arr[0];
-				String game=arr[1];
-				String opponent=arr[2];
+				String type=messageAsArray[0];
 				
 				if(type.equals("New-Game"))
 				{
-					System.out.println("in HandleRequest New-Game event");
+					String game=messageAsArray[1];
+					String opponent=messageAsArray[2];
 					int id=gameServerController.newGame(game,opponent);
-					System.out.println("in HandleRequest the id that the method run() event newGame accepted is->"+id);
 					jsonRequst.put("type",type);
 					jsonRequst.put("ID",id);
 					for(char[] array:this.gameServerController.getBoardState(id))
@@ -69,31 +73,19 @@ public class HandleRequest implements Runnable{
 				}
 				else if(type.equals("Update-Move"))
 				{
-					Integer id=(Integer)jsonObject.get("ID");
-					GameMove gameMove=new GameMove((Integer)jsonObject.get("row"),(Integer)jsonObject.get("col"));
-					GameState gameState=gameServerController.updateMove(id,gameMove);
-					
-					jsonRequst.put("type","Update-Move");
+					int id=Integer.parseInt(messageAsArray[1]);
+					int row=Integer.parseInt(messageAsArray[2]);
+					int col=Integer.parseInt(messageAsArray[3]);
+					GameState gameState=gameServerController.updateMove(id, new GameMove(row,col));
+					jsonRequst.put("type",type);
 					jsonRequst.put("ID",id);
-					jsonRequst.put("state",gameState.ordinal());
-					if(gameState.ordinal()==0)
-						jsonRequst.put("board",null);
-					else
-					{
-						for(char[] array:this.gameServerController.getBoardState(id))
-							for(char sign:array)
-								jsonBoard.add(sign);
-						jsonRequst.put("board",jsonBoard);
-					}
-					
+					jsonRequst.put("state", gameState.ordinal());
+					for(char[] array:this.gameServerController.getBoardState(id))
+						for(char sign:array)
+							jsonBoard.add(sign);
+					jsonRequst.put("board",jsonBoard);
 					output.writeObject(jsonRequst);
 					output.flush();
-					
-					if(gameState.ordinal()>=2)
-					{
-						this.gameServerController.endGame(id);
-						break;
-					}
 				}
 				else if(type.equals("Start-Game"))
 				{
@@ -113,7 +105,6 @@ public class HandleRequest implements Runnable{
 				{
 					Integer id=(Integer)jsonObject.get("ID");
 					gameServerController.endGame(id);
-					break;
 				}
 			} 
 			catch (Exception e) 
