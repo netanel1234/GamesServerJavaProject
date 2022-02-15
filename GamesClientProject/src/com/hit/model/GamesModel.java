@@ -8,60 +8,53 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+/**
+ * The role GamesModel is to form the interface in front of the server, 
+ * to convey the appropriate messages as defined, 
+ * to receive the responses, if any, and to update the graphical interface.
+ * 
+ * implements the interface Model
+ */
 public class GamesModel implements Model {
 	
-	PropertyChangeSupport propertyChangeHandler;
-	JSONObject message,jsonObject;
-	String messageToTheServerAsString;
-	GamesClient gamesClient;
-	JSONParser jsonParser;
-	Integer id;
+	private PropertyChangeSupport propertyChangeHandler;
+	private JSONObject message,jsonObject;
+	private String messageToTheServerAsString;
+	private GamesClient gamesClient;
+	private JSONParser jsonParser;
+	private Integer id;
 	
 	public GamesModel()
 	{
-		System.out.println("constractor of GamesModel");
-		propertyChangeHandler=new PropertyChangeSupport(this);
-		gamesClient=new GamesClient(34567);
+		this.propertyChangeHandler=new PropertyChangeSupport(this);
+		this.gamesClient=new GamesClient(34567);
 	}
 	
 	public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener)
 	{
-		System.out.println("addPropertyChangeListener in GamesModel");
 		propertyChangeHandler.addPropertyChangeListener(propertyChangeListener);
 	}
 
+	/**
+	 * Sends the server a "new-game" request
+	 * @param gameType - the chosen game
+	 * @param opponentType - computer type (random \ smart)
+	 */
 	@Override
 	public void newGame(String gameType, String opponentType)
 	{
-		System.out.println("method newGame in GamesModel");
 		try
 		{
-			gamesClient.connectToServer();
-			
-			System.out.println("in GamesModel after connecting to the server");
-			
-			messageToTheServerAsString="New-Game"+":"+gameType+":"+opponentType;
-			
-			String response=gamesClient.sendMessage(messageToTheServerAsString,true);
-			
-			System.out.println("in GamesModel, the response from the server->"+response);
-			
-			String[] responseToArrStr=response.split(":");
-			
-			char[] board=responseToArrStr[2].toCharArray();
+			this.gamesClient.connectToServer();
+			this.messageToTheServerAsString="New-Game"+":"+gameType+":"+opponentType;
+			String[] response=this.gamesClient.sendMessage(this.messageToTheServerAsString, true).split(":");
+			this.id=Integer.parseInt(response[0]);
+			String type=response[1];
+			char[] board=response[2].toCharArray();
 			Character[] boardToSend=new Character[board.length];
-			for(int i=0;i<responseToArrStr[2].length();i++)
-			{
+			for(int i=0;i<response[2].length();i++)
 				boardToSend[i]=board[i];
-			}
-			System.out.println("in GamesModel printting the before send it to GamesController->");
-			for(int i=0;i<boardToSend.length;i++)
-			{
-				System.out.println(boardToSend[i]);
-			}
-				
-			propertyChangeHandler.firePropertyChange("newGameModel",id,boardToSend);
-			
+			propertyChangeHandler.firePropertyChange("newGameModel", id, boardToSend);
 		} 
 		catch (Exception e) 
 		{
@@ -69,44 +62,35 @@ public class GamesModel implements Model {
 		}
 	}
 
+	/**
+	 * Sends the server an "update-move" message
+	 * @param row - the row of the move the player chose
+	 * @param col - the column of the move the player chose
+	 */
 	@Override
 	public void updatePlayerMove(int row, int col) 
 	{		
-		System.out.println("in GamesModel method updatePlayerMove");
-		
-		//message=new JSONObject();
-		//message.put("type","Update-Move");
-		//message.put("ID",id);
-		//message.put("row",row);
-		//message.put("col",col);
+		if(row==-1)
+			row=col;
 		
 		try 
 		{
-			String response=gamesClient.sendMessage(messageToTheServerAsString,true);
-			JSONObject jsonResponse=(JSONObject)jsonParser.parse(response);
+			this.messageToTheServerAsString="Update-Move"+":"+id+":"+row+":"+col;
+			String[] response=this.gamesClient.sendMessage(this.messageToTheServerAsString,true).split(":");
+			int id=Integer.parseInt(response[0]);
+			String type=response[1];
+			int gameState=Integer.parseInt(response[2]);
+			char[] board=response[3].toCharArray();
+			Character[] boardToSend=new Character[board.length];
+			for(int i=0;i<response[3].length();i++)
+				boardToSend[i]=board[i];
 			
-			JSONArray signs=(JSONArray)jsonResponse.get("board");
-			Character[] arraySigns=new Character[signs.size()];
-			for(int i=0;i<signs.size();i++)
-			{
-				arraySigns[i]=(Character)signs.get(i);
-			}
-			if((Integer)jsonResponse.get("state")>=2)
-			{
-				gamesClient.closeConnection();
-			}
-			
-			propertyChangeHandler.firePropertyChange("updatePlayerMoveModel",(Integer)jsonResponse.get("state"),arraySigns);
+			propertyChangeHandler.firePropertyChange("updatePlayerMoveModel",gameState,boardToSend);
 			
 		}
-		catch (ParseException e) 
-		{
-			e.printStackTrace();
-		} 
 		catch (Exception e) 
 		{
 			e.printStackTrace();
 		}
 	}
-
 }
