@@ -7,6 +7,10 @@ import com.hit.model.Model;
 import com.hit.view.GamesView;
 import com.hit.view.View;
 
+/**
+ * This class actually creates our system in MVC architecture, 
+ * connects the various components and also activates them.
+ */
 public class GamesClientServer {
 	
 	public static void main(String[] args){
