@@ -116,27 +116,27 @@ public class CatchTheBunnySmart extends CatchTheBunny {
 		this.board[computerLocation.getRow()][computerLocation.getCol()]='b';
 	}
 	
-	public boolean isComputerOnTopLeftCorner(GameMove move)
+	private boolean isComputerOnTopLeftCorner(GameMove move)
 	{
 		return (move.getCol()==0 && move.getRow()==0)?true:false;		
 	}
 	
-	public boolean isComputerOnTopRightCorner(GameMove move)
+	private boolean isComputerOnTopRightCorner(GameMove move)
 	{
 		return (move.getCol()==0 && move.getRow()==8)?true:false;		
 	}
 	
-	public boolean isComputerOnBottomLeftCorner(GameMove move)
+	private boolean isComputerOnBottomLeftCorner(GameMove move)
 	{
 		return (move.getCol()==8 && move.getRow()==0)?true:false;		
 	}
 	
-	public boolean isComputerOnBottomRightCorner(GameMove move)
+	private boolean isComputerOnBottomRightCorner(GameMove move)
 	{
 		return (move.getCol()==8 && move.getRow()==8)?true:false;		
 	}
 	
-	public boolean isComputerOnTheEdge(GameMove move)
+	private boolean isComputerOnTheEdge(GameMove move)
 	{
 		return (move.getCol()==8 && move.getRow()==8)?true:false;		
 	} 
